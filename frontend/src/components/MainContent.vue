@@ -37,6 +37,7 @@
         @stop="stopChat"
         @reset="resetChat"
         @export="exportChat"
+        @update:maxRounds="maxRounds = $event"
       />
       <PresetList @load="loadPreset" />
     </div>
@@ -211,7 +212,9 @@ async function runChatCycle() {
 
     if (currentTurn === 1) {
       roundCount.value++
+      console.log(`[轮数检查] 当前轮数：${roundCount.value}, 最大轮数：${maxRounds.value}`)
       if (maxRounds.value > 0 && roundCount.value >= maxRounds.value) {
+        console.log('[轮数检查] 已达到最大轮数，停止对话')
         stopChat()
         ElMessage.success('已达到最大对话轮数')
         return
@@ -357,7 +360,9 @@ function exportChat() {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `ai-chat-${Date.now()}.md`
+  // 文件名包含话题和时间戳
+  const topicPart = topic.value ? topic.value.slice(0, 20).replace(/[\/\\:*?"<>|]/g, '_') : 'chat'
+  a.download = `ai-chat-${topicPart}-${Date.now()}.md`
   a.click()
   URL.revokeObjectURL(url)
   ElMessage.success('对话已导出')
@@ -370,13 +375,43 @@ function generateMarkdown() {
   md += `**轮数**: ${roundCount.value}\n\n`
   md += `---\n\n`
 
+  let currentRound = 0
+  let ai1Name = ''
+  let ai2Name = ''
+
   for (const msg of messages.value) {
     if (msg.role === 'system') {
-      md += `### ${msg.content}\n\n`
-    } else {
-      md += `**${msg.name}**: ${msg.content}\n\n`
+      // 会话开始
+      md += `## 📋 会话开始\n\n`
+      md += `**${msg.content}**\n\n`
+      md += `---\n\n`
+    } else if (msg.role === 'user') {
+      // 用户插入的消息
+      md += `> 👤 **用户**：${msg.content}\n\n`
+      md += `---\n\n`
+    } else if (msg.role === 'assistant') {
+      // 记录 AI 名称
+      if (msg.aiIndex === 1) {
+        ai1Name = msg.name
+      } else if (msg.aiIndex === 2) {
+        ai2Name = msg.name
+      }
+
+      // 每轮对话开始（AI1 发言时）
+      if (msg.aiIndex === 1 && currentRound < roundCount.value) {
+        currentRound++
+        md += `## 🔄 第 ${currentRound} 轮\n\n`
+        md += `---\n\n`
+      }
+
+      // AI 发言
+      const aiLabel = msg.aiIndex === 1 ? `🤖 ${ai1Name}` : `🤖 ${ai2Name}`
+      md += `### ${aiLabel}\n\n`
+      md += `${msg.content}\n\n`
     }
   }
+
+  md += `\n---\n\n**对话结束**\n`
 
   return md
 }
