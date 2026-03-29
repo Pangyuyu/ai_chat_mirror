@@ -191,7 +191,12 @@ const statusDotClass = computed(() => {
 
 .full-width-btn {
   width: 100%;
-  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.full-width-btn :deep(span) {
+  justify-content: flex-start;
 }
 
 .status-info {
