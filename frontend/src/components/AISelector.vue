@@ -198,7 +198,7 @@ const localConfig = reactive({
   roleName: '',
   systemPrompt: '',
   temperature: 0.7,
-  maxTokens: 1000,
+  maxTokens: 32000,  // 32K 上下文
   supportsReasoning: true  // 默认启用思考链
 })
 
@@ -322,7 +322,7 @@ function saveConfig() {
   const config = {
     ...newConfig.value,
     temperature: 0.7,
-    maxTokens: 1000
+    maxTokens: 32000  // 32K 上下文
   }
 
   if (editingId.value) {
@@ -375,7 +375,7 @@ function deleteConfig(id) {
         roleName: '',
         systemPrompt: '',
         temperature: 0.7,
-        maxTokens: 1000,
+        maxTokens: 32000,
         supportsReasoning: true
       })
       emitUpdate()

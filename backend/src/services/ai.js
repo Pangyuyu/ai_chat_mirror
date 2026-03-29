@@ -47,7 +47,7 @@ class AliyunService extends AIService {
         model: this.model || 'qwen-turbo',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000
+        max_tokens: this.config.maxTokens || 32000
       },
       {
         headers: {
@@ -67,7 +67,7 @@ class AliyunService extends AIService {
         model: this.model || 'qwen-turbo',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000,
+        max_tokens: this.config.maxTokens || 32000,
         stream: true
       },
       {
@@ -124,7 +124,7 @@ class MoonshotService extends AIService {
         model: this.model || 'moonshot-v1-8k',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000
+        max_tokens: this.config.maxTokens || 32000
       },
       {
         headers: {
@@ -144,7 +144,7 @@ class MoonshotService extends AIService {
         model: this.model || 'moonshot-v1-8k',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000,
+        max_tokens: this.config.maxTokens || 32000,
         stream: true
       },
       {
@@ -199,7 +199,7 @@ class ZhipuService extends AIService {
         model: this.model || 'glm-4',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000
+        max_tokens: this.config.maxTokens || 32000
       },
       {
         headers: {
@@ -219,7 +219,7 @@ class ZhipuService extends AIService {
         model: this.model || 'glm-4',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000,
+        max_tokens: this.config.maxTokens || 32000,
         stream: true
       },
       {
@@ -276,7 +276,7 @@ class OpenAICompatibleService extends AIService {
         model: this.model || 'gpt-3.5-turbo',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000
+        max_tokens: this.config.maxTokens || 32000
       },
       {
         headers: {
@@ -296,7 +296,7 @@ class OpenAICompatibleService extends AIService {
         model: this.model || 'gpt-3.5-turbo',
         messages: messages,
         temperature: this.config.temperature || 0.7,
-        max_tokens: this.config.maxTokens || 1000,
+        max_tokens: this.config.maxTokens || 32000,
         stream: true
       },
       {
