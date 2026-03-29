@@ -37,6 +37,7 @@ class AliyunService extends AIService {
   constructor(config) {
     super(config);
     this.baseUrl = config.baseUrl || 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+    this.supportsReasoning = config.supportsReasoning !== false; // 默认支持
   }
 
   async sendMessage(messages) {
@@ -91,8 +92,8 @@ class AliyunService extends AIService {
             const parsed = JSON.parse(data);
             const delta = parsed.choices?.[0]?.delta;
             const content = delta?.content || '';
-            const reasoningContent = delta?.reasoning_content || '';
-            
+            const reasoningContent = this.supportsReasoning ? (delta?.reasoning_content || '') : '';
+
             // 直接返回对象，不要 JSON.stringify
             if (content || reasoningContent) {
               yield { content, reasoningContent };
@@ -113,6 +114,7 @@ class MoonshotService extends AIService {
   constructor(config) {
     super(config);
     this.baseUrl = config.baseUrl || 'https://api.moonshot.cn/v1';
+    this.supportsReasoning = config.supportsReasoning === true; // 默认不支持
   }
 
   async sendMessage(messages) {
@@ -157,17 +159,19 @@ class MoonshotService extends AIService {
     for await (const chunk of response.data) {
       const str = chunk.toString();
       const lines = str.split('\n').filter(line => line.trim());
-      
+
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') continue;
-          
+
           try {
             const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content || '';
-            if (content) {
-              yield content;
+            const delta = parsed.choices?.[0]?.delta;
+            const content = delta?.content || '';
+            const reasoningContent = this.supportsReasoning ? (delta?.reasoning_content || delta?.reasoningContent || '') : '';
+            if (content || reasoningContent) {
+              yield { content, reasoningContent };
             }
           } catch (e) {
             // 忽略解析错误
@@ -185,6 +189,7 @@ class ZhipuService extends AIService {
   constructor(config) {
     super(config);
     this.baseUrl = config.baseUrl || 'https://open.bigmodel.cn/api/paas/v4';
+    this.supportsReasoning = config.supportsReasoning !== false; // 默认支持
   }
 
   async sendMessage(messages) {
@@ -229,17 +234,21 @@ class ZhipuService extends AIService {
     for await (const chunk of response.data) {
       const str = chunk.toString();
       const lines = str.split('\n').filter(line => line.trim());
-      
+
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') continue;
-          
+
           try {
             const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content || '';
-            if (content) {
-              yield content;
+            const delta = parsed.choices?.[0]?.delta;
+            const content = delta?.content || '';
+            const reasoningContent = this.supportsReasoning ? (delta?.reasoning_content || '') : '';
+
+            // 支持思考链
+            if (content || reasoningContent) {
+              yield { content, reasoningContent };
             }
           } catch (e) {
             // 忽略解析错误
@@ -257,6 +266,7 @@ class OpenAICompatibleService extends AIService {
   constructor(config) {
     super(config);
     this.baseUrl = config.baseUrl || 'https://api.openai.com/v1';
+    this.supportsReasoning = config.supportsReasoning === true; // 默认不支持
   }
 
   async sendMessage(messages) {
@@ -301,17 +311,20 @@ class OpenAICompatibleService extends AIService {
     for await (const chunk of response.data) {
       const str = chunk.toString();
       const lines = str.split('\n').filter(line => line.trim());
-      
+
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
           if (data === '[DONE]') continue;
-          
+
           try {
             const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content || '';
-            if (content) {
-              yield content;
+            const delta = parsed.choices?.[0]?.delta;
+            const content = delta?.content || '';
+            const reasoningContent = this.supportsReasoning ? (delta?.reasoning_content || delta?.reasoningContent || '') : '';
+
+            if (content || reasoningContent) {
+              yield { content, reasoningContent };
             }
           } catch (e) {
             // 忽略解析错误
@@ -331,6 +344,7 @@ function createAIService(config) {
     'moonshot': MoonshotService,
     'zhipu': ZhipuService,
     'baidu': OpenAICompatibleService,
+    'deepseek': OpenAICompatibleService,
     'custom': OpenAICompatibleService
   };
 

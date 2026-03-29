@@ -62,6 +62,10 @@ watch(() => props.topic, (newVal) => {
   localTopic.value = newVal || ''
 })
 
+watch(localTopic, (newVal) => {
+  emit('update:topic', newVal)
+})
+
 function selectPreset(preset) {
   localTopic.value = preset
   emit('update:topic', preset)

@@ -136,6 +136,16 @@
         <el-form-item label="默认系统提示词">
           <el-input v-model="newConfig.systemPrompt" type="textarea" :rows="3" placeholder="保存后仍可修改本次对话的提示词" />
         </el-form-item>
+        <el-form-item label="思考链支持">
+          <el-switch
+            v-model="newConfig.supportsReasoning"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+          <div style="font-size: 12px; color: #999; margin-top: 5px;">
+            启用后可显示模型的思考过程（如 Qwen、GLM-4 等）
+          </div>
+        </el-form-item>
         <el-form-item>
           <el-button
             type="primary"
@@ -188,7 +198,8 @@ const localConfig = reactive({
   roleName: '',
   systemPrompt: '',
   temperature: 0.7,
-  maxTokens: 1000
+  maxTokens: 1000,
+  supportsReasoning: true  // 默认启用思考链
 })
 
 const newConfig = ref({
@@ -199,7 +210,21 @@ const newConfig = ref({
   baseUrl: '',
   apiKey: '',
   roleName: '',
-  systemPrompt: ''
+  systemPrompt: '',
+  supportsReasoning: true  // 默认启用思考链
+})
+
+// 监听提供商变化，自动设置思考链支持
+watch(() => newConfig.value.provider, (newProvider) => {
+  const defaults = {
+    aliyun: true,      // Qwen 支持
+    zhipu: true,       // GLM-4 支持
+    moonshot: false,   // Kimi 不支持
+    baidu: false,      // 文心一言不支持
+    deepseek: false,   // 暂不支持
+    custom: false      // 自定义默认不启用
+  }
+  newConfig.value.supportsReasoning = defaults[newProvider] !== undefined ? defaults[newProvider] : false
 })
 
 // 监听外部 config 变化
@@ -244,7 +269,8 @@ function selectConfig(id) {
     // 复制配置到本地
     Object.assign(localConfig, {
       ...config,
-      id: config.id
+      id: config.id,
+      supportsReasoning: config.supportsReasoning !== undefined ? config.supportsReasoning : true
     })
     emitUpdate()
     ElMessage.success('已选择')
@@ -261,7 +287,8 @@ function addConfig() {
     baseUrl: '',
     apiKey: '',
     roleName: '',
-    systemPrompt: ''
+    systemPrompt: '',
+    supportsReasoning: true  // 默认启用思考链
   }
   showAddForm.value = true
 }
@@ -276,7 +303,8 @@ function editConfig(config) {
     baseUrl: config.baseUrl,
     apiKey: config.apiKey,
     roleName: config.roleName,
-    systemPrompt: config.systemPrompt
+    systemPrompt: config.systemPrompt,
+    supportsReasoning: config.supportsReasoning !== undefined ? config.supportsReasoning : true
   }
   showAddForm.value = true
 }
@@ -347,7 +375,8 @@ function deleteConfig(id) {
         roleName: '',
         systemPrompt: '',
         temperature: 0.7,
-        maxTokens: 1000
+        maxTokens: 1000,
+        supportsReasoning: true
       })
       emitUpdate()
     }

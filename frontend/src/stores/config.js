@@ -16,13 +16,19 @@ export const useConfigStore = defineStore('config', () => {
     apiKey: '',
     systemPrompt: '',
     temperature: 0.7,
-    maxTokens: 1000
+    maxTokens: 1000,
+    supportsReasoning: true  // 默认启用思考链支持
   }
 
   function loadConfigs() {
     const saved = localStorage.getItem('aiConfigs')
     if (saved) {
-      aiConfigs.value = JSON.parse(saved)
+      const configs = JSON.parse(saved)
+      // 迁移旧配置：添加 supportsReasoning 字段
+      aiConfigs.value = configs.map(config => ({
+        ...config,
+        supportsReasoning: config.supportsReasoning !== undefined ? config.supportsReasoning : true
+      }))
     }
   }
 

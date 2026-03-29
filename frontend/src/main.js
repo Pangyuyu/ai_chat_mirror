@@ -7,6 +7,13 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import App from './App.vue'
 
+// 过滤浏览器扩展引起的错误
+window.addEventListener('unhandledrejection', event => {
+  if (event.reason?.message?.includes('Could not establish connection')) {
+    event.preventDefault()
+  }
+})
+
 const app = createApp(App)
 const pinia = createPinia()
 

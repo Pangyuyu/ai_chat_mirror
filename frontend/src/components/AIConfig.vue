@@ -92,19 +92,29 @@
       </el-form-item>
 
       <el-form-item label="最大 Token 数">
-        <el-input-number 
-          v-model="localConfig.maxTokens" 
-          :min="100" 
-          :max="4000" 
+        <el-input-number
+          v-model="localConfig.maxTokens"
+          :min="100"
+          :max="4000"
           :step="100"
           @change="emitUpdate"
         />
       </el-form-item>
 
+      <el-form-item label="思考链支持">
+        <el-switch
+          v-model="localConfig.supportsReasoning"
+          active-text="启用"
+          inactive-text="禁用"
+          @change="emitUpdate"
+        />
+        <div class="slider-hint">启用后可显示模型的思考过程（如 Qwen、GLM-4 等）</div>
+      </el-form-item>
+
       <el-form-item>
-        <el-button 
-          type="primary" 
-          :loading="testing" 
+        <el-button
+          type="primary"
+          :loading="testing"
           @click="testConnection"
           style="width: 100%"
         >
@@ -129,10 +139,16 @@ const props = defineProps({
 
 const emit = defineEmits(['update:config'])
 
-const localConfig = reactive({ ...props.config })
+const localConfig = reactive({
+  supportsReasoning: true,  // 默认启用思考链
+  ...props.config
+})
 
 watch(() => props.config, (newVal) => {
-  Object.assign(localConfig, newVal)
+  Object.assign(localConfig, {
+    supportsReasoning: true,
+    ...newVal
+  })
 }, { deep: true })
 
 function emitUpdate() {
@@ -143,29 +159,35 @@ function onProviderChange() {
   const defaults = {
     aliyun: {
       baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-      model: 'qwen-turbo'
+      model: 'qwen-turbo',
+      supportsReasoning: true  // Qwen 支持思考链
     },
     moonshot: {
       baseUrl: 'https://api.moonshot.cn/v1',
-      model: 'moonshot-v1-8k'
+      model: 'moonshot-v1-8k',
+      supportsReasoning: false  // Kimi 不支持思考链
     },
     zhipu: {
       baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-      model: 'glm-4'
+      model: 'glm-4',
+      supportsReasoning: true  // GLM-4 支持思考链
     },
     baidu: {
       baseUrl: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1',
-      model: 'completions_pro'
+      model: 'completions_pro',
+      supportsReasoning: false  // 百度文心一言暂不支持
     },
     custom: {
       baseUrl: '',
-      model: ''
+      model: '',
+      supportsReasoning: false  // 自定义模型默认不启用
     }
   }
 
   const defaultsForProvider = defaults[localConfig.provider] || defaults.custom
   localConfig.baseUrl = defaultsForProvider.baseUrl
   localConfig.model = defaultsForProvider.model
+  localConfig.supportsReasoning = defaultsForProvider.supportsReasoning
   emitUpdate()
 }
 
